@@ -12,18 +12,29 @@ function getDivCards(){
 }
 
 function getSetValue(data){
+    function stackXChaos(data){
+        // Round off any decimals
+        data.lines[i].chaosValue = Math.round(data.lines[i].chaosValue)
+        setValue = Math.round(data.lines[i].stackSize * data.lines[i].chaosValue)
+        // Create a new attribute in the data to store the set value
+        data.lines[i].setValue = setValue
+    }
+    
+    // Loop through the collected div data and calculate the total cost for set of div cards
     for(var i = 0; i < 50; i++){
         if(data.lines[i].hasOwnProperty("stackSize")){
             data.lines[i].chaosValue = Math.round(data.lines[i].chaosValue)
-            setValue = Math.round(data.lines[i].stackSize * data.lines[i].chaosValue)
-            data.lines[i].setValue = setValue
+            stackXChaos(data)
         }else{
             data.lines[i].stackSize = 1
-            setValue = Math.round(data.lines[i].stackSize * data.lines[i].chaosValue)
-            data.lines[i].setValue = setValue
+            stackXChaos(data)
         }   
     }
 }
+
+// function prepareTradeQueries(data){
+//     for(var i = 0; i < 50; i++)
+// }
 
 function buildTable(data){
     var table = document.getElementById("div-data")
