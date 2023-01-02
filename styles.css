@@ -9,11 +9,37 @@ body {
     background-image: url('597302.jpg');
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 2000px 1500px;
+    background-size: 2000px 2000px;
 }
 
 #div-table {
-    border: .5px solid rgb(71, 71, 71);
-    background-color: rgb(136, 136, 136);
+    border: .25px solid #1D262F;
+    background-color: #1D262F;
     border-radius: 2.5px;
+}
+
+#div-table h3{
+    width: auto;
+    height: auto;
+    margin: 10px;
+    font-weight: bold;
+    color: #E5E8EB;
+}
+
+#table{
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 98%;
+    color: #E5E8EB;
+    table-layout: fixed;
+}
+
+th {
+    font-size: 15px;
+    padding-left: 0px;
+}
+
+.div-icon {
+    width: 30px;
+    height: 30px;
 }
