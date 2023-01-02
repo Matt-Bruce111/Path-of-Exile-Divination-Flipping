@@ -16,12 +16,10 @@ function getSetValue(data){
         if(data.lines[i].hasOwnProperty("stackSize")){
             data.lines[i].chaosValue = Math.round(data.lines[i].chaosValue)
             setValue = Math.round(data.lines[i].stackSize * data.lines[i].chaosValue)
-            console.log(setValue)
             data.lines[i].setValue = setValue
         }else{
             data.lines[i].stackSize = 1
             setValue = Math.round(data.lines[i].stackSize * data.lines[i].chaosValue)
-            console.log(setValue)
             data.lines[i].setValue = setValue
         }   
     }
