@@ -1,0 +1,19 @@
+.box{
+    min-height: 25px;
+    border: 1px solid black;
+    background-color: lightblue;
+}
+
+body {
+    height: 100%;
+    background-image: url('597302.jpg');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 2000px 1500px;
+}
+
+#div-table {
+    border: .5px solid rgb(71, 71, 71);
+    background-color: rgb(136, 136, 136);
+    border-radius: 2.5px;
+}
