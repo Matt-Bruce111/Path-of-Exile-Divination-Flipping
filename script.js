@@ -21,7 +21,7 @@ function getSetValue(data){
     }
     
     // Loop through the collected div data and calculate the total cost for set of div cards
-    for(var i = 0; i < 50; i++){
+    for(var i = 0; i < data.lines.length; i++){
         if(data.lines[i].hasOwnProperty("stackSize")){
             data.lines[i].chaosValue = Math.round(data.lines[i].chaosValue)
             stackXChaos(data)
