@@ -16,6 +16,12 @@ body h2 {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+.container {
+    width: 100%;
+    margin-left: 100px;
+    margin-right: 100px;
+}
+
 /* SIDE NAVBAR */
 #side-nav {
     height: 500px;
@@ -72,6 +78,10 @@ body h2 {
 th {
     font-size: 15px;
     padding-left: 0px;
+}
+
+#div-data td {
+    padding-left: 12px;
 }
 
 .data-right {

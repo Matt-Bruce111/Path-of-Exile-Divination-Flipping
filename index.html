@@ -8,7 +8,7 @@
     </head>
     <body>
         <h2>Path of Exile Divination Info</h2>        
-        <div class="container">
+        <div class="container" id="container">
             <div class="row row-cols">
                 <div class="col-2" id="side-nav">
                     <div class="row-12">
@@ -35,13 +35,13 @@
                       <div class="modal-body">
                         <form>
                           <div class="form-group">
-                            <label for="email">Email address</label>
-                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+                            <label for="signInEmail">Email address</label>
+                            <input type="email" class="form-control" id="signInEmail" aria-describedby="emailHelp" placeholder="Enter email">
                             <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
                           </div>
                           <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" id="password" placeholder="Password">
+                            <label for="signInPassword">Password</label>
+                            <input type="password" class="form-control" id="signInPassword" placeholder="Password">
                           </div>
                           <div class="form-group form-check">
                             <input type="checkbox" class="form-check-input" id="rememberMe">
@@ -71,12 +71,12 @@
                             <input type="text" class="form-control" id="name" placeholder="Enter your name">
                             </div>
                             <div class="form-group">
-                            <label for="email">Email address</label>
-                            <input type="email" class="form-control" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+                            <label for="signUpEmail">Email address</label>
+                            <input type="email" class="form-control" id="signUpEmail" aria-describedby="emailHelp" placeholder="Enter email">
                             </div>
                             <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" id="password" placeholder="Password">
+                            <label for="signUpPassword">Password</label>
+                            <input type="password" class="form-control" id="signUpPassword" placeholder="Password">
                             </div>
                             <div class="form-group form-check">
                             <input type="checkbox" class="form-check-input" id="termsOfService">
@@ -101,7 +101,7 @@
                             <table class="table" id="table">
                                 <thead>
                                     <tr>
-                                        <th style="width:25%;">Name</th>
+                                        <th style="width:30%;">Name</th>
                                         <th style="width:13%;" class="data-right">Stack Size</th>
                                         <th style="width:13%;" class="data-right">Value</th>
                                         <th style="width:13%;" class="data-right">Set Value</th>
