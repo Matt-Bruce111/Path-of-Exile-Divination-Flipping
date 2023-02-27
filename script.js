@@ -42,6 +42,8 @@ function buildItemDatabase(league){
     const typeTag = ["Oil", "Incubator", "Scarab", "Fossil", "Resonator", "Essence", "DivinationCard", "SkillGem", "BaseType", 
     "HelmetEnchant", "UniqueMap", "UniqueJewel", "UniqueFlask", "UniqueWeapon", "UniqueArmour", "UniqueAccessory", "Beast"]
     
+    const currencyTypeTag = ["Currency", "Fragment"]
+
     for (i = 0; i < typeTag.length; i++){
         $.ajax({
         url: `https://poe.ninja/api/data/itemoverview?league=${league}&type=${typeTag[i]}&language=en`,
@@ -50,13 +52,30 @@ function buildItemDatabase(league){
         success:function(response){
             data = response
             data = cleanData(data)
-            console.log(data)
+            // console.log(data)
             for (j = 0; j < data.length; j++){
                 itemDB.push(data[j])
             }
         }  
     })
     }
+
+    for (i = 0; i < currencyTypeTag.length; i++){
+        $.ajax({
+        url: `https://poe.ninja/api/data/currencyoverview?league=${league}&type=${currencyTypeTag[i]}&language=en`,
+        async: false,
+        method: "GET",
+        success:function(response){
+            data = response
+            data = cleanData(data)
+            // console.log(data)
+            for (j = 0; j < data.length; j++){
+                itemDB.push(data[j])
+            }
+        }  
+    })
+    }
+
     console.log(`Items Returned: ${itemDB.length}`)
     console.log(itemDB)
 }
@@ -69,7 +88,7 @@ function getItemFromCard(){
         itemName = explicitString.slice(start + 1, end)
         divCards[i].itemName = itemName
     }
-    console.log(itemDB)
+    // console.log(itemDB)
 }
 
 function search(itemName, itemDB){
@@ -115,8 +134,14 @@ function cleanData(data){
         if (item.hasOwnProperty("name")) {
             cleanData.name = item.name;
         }
+        if (item.hasOwnProperty("currencyTypeName")) {
+            cleanData.name = item.currencyTypeName;
+        }
         if (item.hasOwnProperty("chaosValue")) {
             cleanData.chaosValue = item.chaosValue;
+        }
+        if (item.hasOwnProperty("chaosEquivalent")) {
+            cleanData.chaosValue = item.chaosEquivalent;
         }
         if (item.hasOwnProperty("divineValue")) {
             cleanData.divineValue = item.divineValue;
