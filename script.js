@@ -16,6 +16,7 @@ function getDivCards(league){
             getSetValue(divCards)
             getItemFromCard()
             addPriceDataToCards()
+            removeDisabledCards()
             console.log(`Divination Cards Returned: ${divCards.length}`)
             console.log(divCards)
             buildTable(divCards)
@@ -30,7 +31,7 @@ function getLeague(){
         method: "GET",
         async: false,
         success:function(response){
-            data = response[4]
+            data = response[8]
             console.log(`Current League: ${data.id}`)
             league = data.id
         }
@@ -51,9 +52,11 @@ function buildItemDatabase(league){
         method: "GET",
         success:function(response){
             data = response
+            // Temporarily skipping cleanData on most items to potentially reduce page load times
             data = cleanData(data)
             // console.log(data)
             for (j = 0; j < data.length; j++){
+                //console.log(data.lines[j])
                 itemDB.push(data[j])
             }
         }  
@@ -80,17 +83,49 @@ function buildItemDatabase(league){
     console.log(itemDB)
 }
 
+// Extract the item name from the div card
 function getItemFromCard(){
     for (var i = 0; i < divCards.length; i++){
-        var explicitString = divCards[i].explicitModifiers[0].text
+        var explicitString = divCards[i].explicitModifiers[0].text;
         var start = explicitString.search("{");
         var end = explicitString.search("}");
-        itemName = explicitString.slice(start + 1, end)
-        divCards[i].itemName = itemName
+        itemName = explicitString.slice(start + 1, end);
+
+        // Check if reward item is corrupted
+        if(explicitString.includes("Corrupted")){
+            divCards[i].corrupted = true;
+        } else {
+            divCards[i].corrupted = false;
+        }
+
+        // Check if item has 2 implicits
+        if(explicitString.includes("Two-Implicit")){
+            divCards[i].nImplicits = 2;
+        }
+        
+        // Check if a div card rewards more than 1 item
+        if (itemName.match(/^\d/)) {
+            //console.log(itemName)
+            // Get the itemQty from the itemName string
+            x = itemName.search("x");
+            itemQty = itemName.slice(0, x);
+            //console.log(`Item Qty: ${itemQty}`)
+
+            // Remove the Qty from the itemName string
+            itemName = itemName.slice(x + 2);
+            //console.log(`Item Name: ${itemName}`)
+
+            // Add new properties to card
+            divCards[i].itemName = itemName;
+            divCards[i].itemQty = +itemQty;
+         } else {
+            divCards[i].itemName = itemName;
+         }
     }
     // console.log(itemDB)
 }
 
+// Search for the an item in the itemDB
 function search(itemName, itemDB){
     for (let i=0; i < itemDB.length; i++) {
         if (itemDB[i].name === itemName) {
@@ -100,31 +135,123 @@ function search(itemName, itemDB){
     }
 }
 
-function addPriceDataToCards(){
-    for (let i = 0; i < divCards.length; i++){
-        priceData = search(divCards[i].itemName, itemDB)
-        console.log(priceData)
-        if (priceData === undefined){
-            console.log("Couldnt find Item Value")
-        } else {
-            divCards[i].itemChaosValue = priceData.chaosValue
-            divCards[i].itemDivValue = priceData.divineValue
+// Find any cards that have been disabled
+function removeDisabledCards(){
+    for (let i=0; i < divCards.length; i++) {
+        if (divCards[i].itemName === "Disable") {
+            // console.log(divCards[i]);
+            var index = i;
+            if (index > -1) { // only splice array when item is found
+                divCards.splice(index, 1); // 2nd parameter means remove one item only
+            }
         }
     }
 }
 
+// Match div card rewards to items in the database and add the their respective values to the divcard
+function addPriceDataToCards(){
+    var failCount = 0
+    for (let i = 0; i < divCards.length; i++){
+        if(divCards[i].hasOwnProperty("corrupted")){
+
+        }
+        priceData = search(divCards[i].itemName, itemDB)
+        
+        //console.log(priceData)
+        if (priceData === undefined){
+            // console.log("Couldnt find Item Value")
+            failCount += 1
+        } else {
+            if (divCards[i].hasOwnProperty("itemQty")) {
+                divCards[i].itemChaosValue = Math.round(priceData.chaosValue * divCards[i].itemQty)
+            } else {
+                divCards[i].itemChaosValue = Math.round(priceData.chaosValue)
+                divCards[i].itemDivValue = Math.round(priceData.divineValue)
+            }
+        }
+        // Calculate profit
+        divCards[i].profit = divCards[i].itemChaosValue - divCards[i].setValue
+        beforeRound = (divCards[i].profit / divCards[i].setValue) * 100
+        divCards[i].profitPercentage = Math.round((beforeRound * 100) / 100)
+    }
+    console.log(`-- Failed to provide Item Value for ${failCount} items --`)
+}
+
 // WIP For searching items such as Corrupted Mageblood
-function searchItem(){
-    $.ajax({
-        url: "https://www.pathofexile.com/api/trade/search/Sanctum",    
-        method: "POST",
-        success:function(response){
-            data = response
-            data = cleanData(data)
-            getSetValue(data)
-            buildTable(data)
-            console.log(data)
-        }})
+async function searchItem(itemName, corrupted){
+    var url = 'https://www.pathofexile.com/api/trade/search/Sanctum';
+
+    // Use proxy url to avoid registering app
+    const proxyUrl = "https://corsproxy.io/?";
+    const firstRequest = proxyUrl + encodeURIComponent(url);
+
+    var name = "Mageblood";
+    var type = "Heavy Belt";
+
+    const data = `{
+    "query": {
+        "status": { "option": "online" },
+        "name": "${name}",
+        "filters":{
+            "misc_filters":{
+               "filters":{
+                  "corrupted":{
+                     "option":"true"
+                  }
+               },
+               "disabled":false
+            }
+         }
+    },
+    "sort": { "price": "asc" }
+    }`;
+    
+    // First response for fetching all the itemIDs
+    const firstResponse = await fetch(firstRequest, {
+        method: 'POST',
+        headers: {
+            'content-type': 'application/json',
+            //'cookies': 'POESESSID=9cfb841bfd9690ffaec900f14207fb12'
+        },
+        body: data,
+    });
+
+    const text = await firstResponse.json();
+
+    // Query id goes at the end of the url after all the itemIDs
+    var queryID = text.id;
+    var itemIDS = "";
+
+    // Loop through results to create id string seperated by commas
+    // Can only fetch the first 10 items due to trade api being limited
+    for(i = 0; i < 9; i++){
+        if(i < text.result.length - 1){
+            itemIDS += `${text.result[i]},`
+        } else {
+            itemIDS += `${text.result[i]}`
+        }
+    }
+
+    // console.log(itemIDS);
+    // console.log(text.id);
+
+    // Add the ids into the api fetch endpoint string
+    url = `https://www.pathofexile.com/api/trade/fetch/${itemIDS}?query=${queryID}`
+
+    const secondRequest = proxyUrl + url;
+
+    // Try to fetch the item details, CURRENTLY NOT WORKING (Invalid Query, Manually call api through trade site to compare requests)
+    const secondResponse = await fetch(secondRequest, {
+        method: 'GET',
+        headers: {
+            'content-type': 'application/json'
+            //'cookies': 'POESESSID=9cfb841bfd9690ffaec900f14207fb12'
+        }
+    });
+
+    const fetchedItems = await secondResponse.json();
+
+    console.log(fetchedItems);
 }
 
 // cleanData will go thorugh the JSON recieved from the poe.ninja api and cull any of the unneeded data.
@@ -208,7 +335,9 @@ function buildTable(data){
                         <td class="data-right">${data[i].stackSize}</td>
                         <td class="data-right">${data[i].chaosValue}<span>  </span><img title="Chaos Orb" width="25" height="25" src="https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&w=1&h=1" alt="Chaos Orb"></td>
                         <td class="data-right">${data[i].setValue}<span>  </span><img title="Chaos Orb" width="25" height="25" src="https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&w=1&h=1" alt="Chaos Orb"></td>
-                        <td class="data-right">${data[i].itemChaosValue}<span>  </span><img title="Chaos Orb" width="25" height="25" src="https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&w=1&h=1" alt="Chaos Orb"></td>               
+                        <td class="data-right">${data[i].itemChaosValue}<span>  </span><img title="Chaos Orb" width="25" height="25" src="https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&w=1&h=1" alt="Chaos Orb"></td>
+                        <td class="data-right">${data[i].profit}<span>  </span><img title="Chaos Orb" width="25" height="25" src="https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&w=1&h=1" alt="Chaos Orb"></td>
+                        <td class="data-right">${data[i].profitPercentage}<span> % </span></td>                  
                     </tr>`
         table.innerHTML += row
     }
@@ -218,4 +347,8 @@ getLeague();
 buildItemDatabase(league);
 getDivCards(league);
 
+searchItem();
+
 //getItemFromCard()
+
+// fu
